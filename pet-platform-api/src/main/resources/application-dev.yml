@@ -1,0 +1,114 @@
+# =====================================================
+# 宠物领养信息平台 — 开发环境配置
+# =====================================================
+server:
+  port: 8080
+
+spring:
+  application:
+    name: pet-platform
+
+  # ---- 数据源配置 (MySQL 8.0) ----
+  datasource:
+    url: jdbc:mysql://localhost:3306/pet_platform?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true&createDatabaseIfNotExist=true
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+
+  # ---- Redis 配置 ----
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      database: 0
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+
+  # ---- 文件上传 ----
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+  # ---- Flyway 数据库迁移 ----
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
+    encoding: UTF-8
+
+# ---- MyBatis-Plus ----
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+      table-prefix: t_
+  mapper-locations: classpath*:/mapper/**/*.xml
+
+# ---- 应用自定义配置 ----
+app:
+  jwt:
+    secret: ${JWT_SECRET:replace-with-a-long-random-base64-secret}
+    expiration-ms: 86400000       # 24小时
+    refresh-expiration-ms: 604800000  # 7天
+  file:
+    storage-type: ${FILE_STORAGE_TYPE:local}     # local → 本地(默认,无需密钥) | oss → 阿里云(需配置 OSS 环境变量)
+    local-path: ./uploads
+    allowed-extensions: jpg,jpeg,png,webp
+  follow-up:
+    default-months: 12
+    interval-months: 1
+    reminder-days-before: 3
+
+# ---- x-file-storage 阿里云 OSS 配置（可选，默认关闭）----
+# 默认 enable-storage=false，应用以本地存储(./uploads)运行，无需任何密钥。
+# 若要启用云端存储：设置环境变量 OSS_ENABLE=true、OSS_ACCESS_KEY、OSS_SECRET_KEY 等（切勿提交真实密钥，见 README）。
+dromara:
+  x-file-storage:
+    default-platform: aliyun-oss-1
+    aliyun-oss:
+      - platform: aliyun-oss-1
+        enable-storage: ${OSS_ENABLE:false}
+        access-key: ${OSS_ACCESS_KEY}
+        secret-key: ${OSS_SECRET_KEY}
+        end-point: ${OSS_ENDPOINT:oss-cn-hangzhou.aliyuncs.com}
+        bucket-name: ${OSS_BUCKET:your-bucket-name}
+        domain: ${OSS_DOMAIN:}
+        base-path: petsystem/                  # 统一上传根路径
+
+# ---- API 文档 (SpringDoc) ----
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  default-produces-media-type: application/json
+
+# ---- 日志 ----
+logging:
+  level:
+    com.shanhai.petplatform: debug
+    org.springframework.security: info
+  file:
+    name: ./logs/pet-platform.log

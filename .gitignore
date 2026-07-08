@@ -1,0 +1,79 @@
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Application ###
+*.log
+logs/
+uploads/
+*.log.*
+
+# ---- 前端 (Node/Vite) ----
+frontend-vue/node_modules/
+frontend-vue/dist/
+frontend-vue/.env
+frontend-vue/.env.*
+
+# ---- 本地环境变量 / 密钥 (切勿提交) ----
+.env
+.env.*
+*.local
+
+# ---- 操作系统 / 编辑器 ----
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# ---- 与代码无关的临时 / 备份文件 ----
+*.docx
+compile_out3.txt
+# 顶层 sql/ 为迁移脚本的冗余备份，权威版本在 pet-platform-api/src/main/resources/db/migration/
+sql/
+
+# ---- 文档中的 prompt 草稿（非项目文档） ----
+docs/backend_prompts.md
+
+# ---- AI 工具内部目录（非项目代码，含本地记忆/截图） ----
+.workbuddy/
+.codebuddy/
+
+# ---- 临时文件 ----
+fr_reflect.tmp
+
+# ---- 简历 / 与项目代码无关的材料 ----
+AI_Agent_智能客服工单系统_简历项目描述.md
+PetPlatform_简历项目描述.md
+林贤浩_简历_新版.docx
+
+
+

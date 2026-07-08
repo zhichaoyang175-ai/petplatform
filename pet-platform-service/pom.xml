@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.shanhai</groupId>
+        <artifactId>PetPlatform</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>pet-platform-service</artifactId>
+    <name>pet-platform-service</name>
+    <description>业务逻辑模块 — Service 接口、实现、状态机</description>
+
+    <dependencies>
+        <!-- 内部依赖 -->
+        <dependency>
+            <groupId>com.shanhai</groupId>
+            <artifactId>pet-platform-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.shanhai</groupId>
+            <artifactId>pet-platform-repository</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.shanhai</groupId>
+            <artifactId>pet-platform-infrastructure</artifactId>
+        </dependency>
+
+        <!-- Spring Boot Starters (业务层需要) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+
+        <!-- Spring Transaction -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+        </dependency>
+
+        <!-- MapStruct (Entity ↔ DTO 转换) -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>

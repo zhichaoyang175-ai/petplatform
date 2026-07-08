@@ -1,0 +1,6 @@
+# 默认激活开发环境
+spring:
+  profiles:
+    active: dev
+  application:
+    name: pet-platform

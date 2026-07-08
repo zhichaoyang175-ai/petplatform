@@ -1,0 +1,53 @@
+package com.shanhai.petplatform.common.dto.request;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
+
+import java.math.BigDecimal;
+
+/**
+ * 宠物发布请求
+ *
+ * @author PetPlatform Team
+ */
+@Data
+public class PetCreateRequest {
+
+    /** 宠物名称 */
+    @NotBlank(message = "宠物名称不能为空")
+    private String name;
+
+    /** 品种 */
+    @NotBlank(message = "品种不能为空")
+    private String breed;
+
+    /** 性别: 0-未知 1-公 2-母 */
+    @NotNull(message = "性别不能为空")
+    private Integer gender;
+
+    /** 月龄 */
+    private Integer ageMonths;
+
+    /** 体重(kg) */
+    private BigDecimal weightKg;
+
+    /** 是否绝育: 0-否 1-是 */
+    private Integer neutered;
+
+    /** 健康状态: 1-健康 2-轻微疾病 3-治疗中 4-残疾 */
+    private Integer healthStatus;
+
+    /** 所在省 */
+    private String locationProvince;
+
+    /** 所在市 */
+    private String locationCity;
+
+    /** 详细描述 */
+    private String description;
+
+    /** 领养要求 */
+    private String adoptionRequirements;
+
+}

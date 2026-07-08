@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shanhai.petplatform.repository.mapper.PetMapper">
+
+    <!--
+        =====================================================
+        多条件动态搜索 — 前端组合筛选宠物列表
+        所有查询条件均为可选，未传则忽略
+        =====================================================
+    -->
+    <select id="searchPets" resultType="com.shanhai.petplatform.repository.entity.Pet">
+        SELECT *
+        FROM t_pet
+        <where>
+            <!-- 默认排除已下架的宠物 -->
+            AND status != 6
+
+            <if test="breed != null and breed != ''">
+                AND breed = #{breed}
+            </if>
+            <if test="ageMin != null">
+                AND age_months >= #{ageMin}
+            </if>
+            <if test="ageMax != null">
+                AND age_months &lt;= #{ageMax}
+            </if>
+            <if test="gender != null">
+                AND gender = #{gender}
+            </if>
+            <if test="neutered != null">
+                AND neutered = #{neutered}
+            </if>
+            <if test="healthStatus != null">
+                AND health_status = #{healthStatus}
+            </if>
+            <if test="province != null and province != ''">
+                AND location_province = #{province}
+            </if>
+            <if test="city != null and city != ''">
+                AND location_city = #{city}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        <choose>
+            <when test="sortBy == 'view_count'">
+                ORDER BY view_count DESC
+            </when>
+            <otherwise>
+                ORDER BY created_at DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!--
+        ........................................................
+        热门宠物 — 按浏览量降序，限制返回条数
+        ........................................................
+    -->
+    <select id="selectHotPets" resultType="com.shanhai.petplatform.repository.entity.Pet">
+        SELECT *
+        FROM t_pet
+        WHERE status != 6
+        ORDER BY view_count DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>
