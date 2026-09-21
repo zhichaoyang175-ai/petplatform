@@ -69,10 +69,19 @@ docs/backend_prompts.md
 
 # ---- 临时文件 ----
 fr_reflect.tmp
+_diag.txt
+_git.txt
+_wb_*.txt
 
-# ---- 简历 / 与项目代码无关的材料 ----
+# ---- Redis 本地持久化文件 ----
+dump.rdb
+
+# ---- 简历 / 面试准备 / 与项目代码无关的个人材料 ----
 AI_Agent_智能客服工单系统_简历项目描述.md
 PetPlatform_简历项目描述.md
+PetPlatform_简历更新_含限流中间件.md
+PetPlatform_面试深挖应对.md
+PetPlatform_面试连环追问11问详解.md
 林贤浩_简历_新版.docx
 
 

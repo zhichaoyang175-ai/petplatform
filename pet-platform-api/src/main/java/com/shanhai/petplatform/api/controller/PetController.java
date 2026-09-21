@@ -1,6 +1,7 @@
 package com.shanhai.petplatform.api.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.shanhai.petplatform.common.annotation.RateLimit;
 import com.shanhai.petplatform.common.dto.request.PetCreateRequest;
 import com.shanhai.petplatform.common.dto.request.PetSearchRequest;
 import com.shanhai.petplatform.common.dto.request.PetUpdateRequest;
@@ -8,6 +9,7 @@ import com.shanhai.petplatform.common.dto.response.PetDetailVO;
 import com.shanhai.petplatform.common.dto.response.PetImageVO;
 import com.shanhai.petplatform.common.dto.response.PetVO;
 import com.shanhai.petplatform.common.dto.response.StatsVO;
+import com.shanhai.petplatform.common.enums.RateLimitType;
 import com.shanhai.petplatform.common.result.PageResult;
 import com.shanhai.petplatform.common.result.R;
 import com.shanhai.petplatform.infrastructure.security.CurrentUser;
@@ -48,6 +50,12 @@ public class PetController {
         return R.ok(petService.searchPets(request));
     }
 
+    /** 热门宠物列表 — 无需登录（Cache Aside + Redisson 防击穿缓存） */
+    @GetMapping("/hot")
+    public R<List<PetVO>> getHotPets(@RequestParam(defaultValue = "10") int limit) {
+        return R.ok(petService.getHotPets(limit));
+    }
+
     /** 获取宠物详情 — currentUserId 可选 */
     @GetMapping("/{id}")
     public R<PetDetailVO> getDetail(@PathVariable Long id,
@@ -55,7 +63,8 @@ public class PetController {
         return R.ok(petService.getPetDetail(id, currentUserId));
     }
 
-    /** 发布宠物 — 需登录 */
+    /** 发布宠物 — 需登录（按用户维度限流，防止恶意刷单） */
+    @RateLimit(type = RateLimitType.USER, limit = 10, window = 60, message = "发布过于频繁，请稍后再试")
     @PostMapping
     public R<PetVO> create(@Valid @RequestBody PetCreateRequest request,
                             @CurrentUser Long userId) {

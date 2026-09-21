@@ -12,6 +12,11 @@ public interface FollowUpService {
 
     void generateFollowUpPlan(Long adoptionRecordId, int totalMonths);
 
+    /**
+     * 判断领养记录是否已生成回访计划（用于 MQ 消费者幂等）。
+     */
+    boolean hasFollowUpPlan(Long adoptionRecordId);
+
     PageResult<FollowUpTaskVO> getMyTasks(Long userId, Integer status, int page, int size);
 
     FollowUpTaskVO getTaskDetail(Long taskId, Long userId);

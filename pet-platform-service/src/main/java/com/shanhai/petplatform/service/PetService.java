@@ -39,6 +39,9 @@ public interface PetService {
     /** 我的宠物列表 */
     PageResult<PetVO> getMyPets(Long ownerId, Integer status, int page, int size);
 
+    /** 热门宠物列表（按浏览量降序，走 Cache Aside + Redisson 防击穿缓存） */
+    List<PetVO> getHotPets(int limit);
+
     /** 上传宠物图片 */
     List<PetImageVO> uploadPetImages(Long petId, MultipartFile[] files, Long userId);
 

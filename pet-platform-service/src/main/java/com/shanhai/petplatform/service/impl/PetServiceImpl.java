@@ -10,19 +10,32 @@ import com.shanhai.petplatform.common.dto.response.*;
 import com.shanhai.petplatform.common.exception.BusinessException;
 import com.shanhai.petplatform.common.exception.ForbiddenException;
 import com.shanhai.petplatform.common.exception.NotFoundException;
+import com.shanhai.petplatform.common.constant.RedisKeyConstant;
+import com.shanhai.petplatform.common.dto.request.PetCreateRequest;
+import com.shanhai.petplatform.common.dto.request.PetSearchRequest;
+import com.shanhai.petplatform.common.dto.request.PetUpdateRequest;
+import com.shanhai.petplatform.common.dto.response.*;
+import com.shanhai.petplatform.common.exception.BusinessException;
+import com.shanhai.petplatform.common.exception.ForbiddenException;
+import com.shanhai.petplatform.common.exception.NotFoundException;
 import com.shanhai.petplatform.common.result.PageResult;
 import com.shanhai.petplatform.infrastructure.cache.CacheService;
 import com.shanhai.petplatform.infrastructure.storage.FileStorageStrategy;
 import com.shanhai.petplatform.repository.entity.*;
 import com.shanhai.petplatform.repository.mapper.*;
 import com.shanhai.petplatform.service.PetService;
+import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -41,6 +54,11 @@ public class PetServiceImpl implements PetService {
     private final FavoriteMapper favoriteMapper;
     private final FileStorageStrategy fileStorageStrategy;
     private final CacheService cacheService;
+
+    // Redisson 为可选依赖：本地未启动 Redis 时 RedissonConfig 返回 null，此处为 null，
+    // getHotPets 自动降级为无锁直查 DB（与 CacheService 的 Redis 静默降级策略一致）。
+    @Autowired(required = false)
+    private RedissonClient redissonClient;
 
     private static final int OFFLINE_STATUS = 6;
 
@@ -294,6 +312,65 @@ public class PetServiceImpl implements PetService {
                 .toList();
 
         return PageResult.of(voList, petPage.getTotal(), (int) petPage.getCurrent(), (int) petPage.getSize());
+    }
+
+    // ────────────────── 热门宠物（Cache Aside + Redisson 防击穿） ──────────────────
+
+    @Override
+    public List<PetVO> getHotPets(int limit) {
+        String key = RedisKeyConstant.HOT_PETS_KEY;
+        // 1. Cache Aside：先读缓存
+        String cached = cacheService.getString(key);
+        if (cached != null) {
+            return JSONUtil.toList(cached, PetVO.class);
+        }
+        // 2. 缓存未命中：尝试用 Redisson 分布式锁互斥回源（防缓存击穿）
+        if (redissonClient != null) {
+            RLock lock = redissonClient.getLock("lock:" + key);
+            try {
+                // 抢锁等待 3s；leaseTime=-1 启用看门狗：默认 30s 超时，每 10s 自动续期，业务未完锁不丢
+                if (lock.tryLock(3, -1, TimeUnit.SECONDS)) {
+                    try {
+                        // 双重检查（DCL）：抢到锁后再看一眼缓存，避免并发重复回源
+                        String recheck = cacheService.getString(key);
+                        if (recheck != null) {
+                            return JSONUtil.toList(recheck, PetVO.class);
+                        }
+                        List<PetVO> list = loadHotFromDb(limit);
+                        cacheService.set(key, list, 1, TimeUnit.HOURS);
+                        return list;
+                    } finally {
+                        if (lock.isHeldByCurrentThread()) {
+                            lock.unlock();
+                        }
+                    }
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.warn("获取热门宠物分布式锁被中断，降级为无锁直查 DB");
+            } catch (Exception e) {
+                log.warn("Redisson 锁回源异常，降级为无锁直查 DB: {}", e.getMessage());
+            }
+        }
+        // 3. 降级：无 Redisson（本地未启动 Redis）或抢锁失败 → 直接查 DB 并写缓存
+        List<PetVO> list = loadHotFromDb(limit);
+        cacheService.set(key, list, 1, TimeUnit.HOURS);
+        return list;
+    }
+
+    /** 从 DB 加载热门宠物并转 VO（缓存中不携带 createdAt，规避 LocalDateTime 序列化问题） */
+    private List<PetVO> loadHotFromDb(int limit) {
+        List<Pet> pets = petMapper.selectHotPets(limit);
+        List<Long> petIds = pets.stream().map(Pet::getId).toList();
+        Map<Long, String> coverMap = buildCoverMap(petIds);
+        return pets.stream()
+                .map(p -> PetVO.of(p.getId(), p.getName(), p.getBreed(),
+                        p.getGender(), p.getAgeMonths(), p.getWeightKg(),
+                        p.getNeutered(), p.getHealthStatus(),
+                        p.getLocationProvince(), p.getLocationCity(),
+                        p.getDescription(), p.getStatus(), p.getViewCount(),
+                        coverMap.get(p.getId()), null))
+                .toList();
     }
 
     // ────────────────── 图片上传 ──────────────────

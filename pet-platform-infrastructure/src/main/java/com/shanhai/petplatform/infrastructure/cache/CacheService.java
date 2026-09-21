@@ -43,6 +43,22 @@ public class CacheService {
         }
     }
 
+    /**
+     * 仅在 key 不存在时写入（SETNX），用于 MQ 消息幂等去重。
+     *
+     * <p>返回值语义：{@code true} = 首次写入成功（应继续处理）；{@code false} = key 已存在（重复消息，应跳过）。
+     * 当 Redis 异常时<b>返回 true</b>（fail-open）：宁可重复处理，也不因去重组件故障而丢失消息。</p>
+     */
+    public boolean setIfAbsent(String key, Object value, long timeout, TimeUnit unit) {
+        try {
+            return Boolean.TRUE.equals(stringRedisTemplate.opsForValue()
+                    .setIfAbsent(key, toJson(value), timeout, unit));
+        } catch (Exception e) {
+            logRedisError("setIfAbsent", e);
+            return true;
+        }
+    }
+
     // ────────────────── 读取 ──────────────────
 
     @SuppressWarnings("unchecked")

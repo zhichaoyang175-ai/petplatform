@@ -1,8 +1,10 @@
 package com.shanhai.petplatform.api.controller;
 
+import com.shanhai.petplatform.common.annotation.RateLimit;
 import com.shanhai.petplatform.common.dto.request.LoginRequest;
 import com.shanhai.petplatform.common.dto.request.RegisterRequest;
 import com.shanhai.petplatform.common.dto.response.LoginVO;
+import com.shanhai.petplatform.common.enums.RateLimitType;
 import com.shanhai.petplatform.common.result.R;
 import com.shanhai.petplatform.infrastructure.security.CurrentUser;
 import com.shanhai.petplatform.service.AuthService;
@@ -45,8 +47,9 @@ public class AuthController {
     }
 
     /**
-     * 发送短信验证码
+     * 发送短信验证码 — 按 IP 限流，防止短信接口被恶意轰炸
      */
+    @RateLimit(type = RateLimitType.IP, limit = 5, window = 60, message = "验证码发送过于频繁，请稍后再试")
     @PostMapping("/send-code")
     public R<Void> sendCode(@RequestBody Map<String, String> body) {
         String phone = body.get("phone");

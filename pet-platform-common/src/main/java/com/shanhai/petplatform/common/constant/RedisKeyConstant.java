@@ -27,6 +27,12 @@ public final class RedisKeyConstant {
     /** 访问令牌黑名单 — Key: jwt:blacklist:{token}，用于登出即失效，TTL=令牌剩余有效期 */
     public static final String JWT_BLACKLIST_PREFIX = "jwt:blacklist:";
 
+    /** 接口限流计数 — Key: rate:limit:{prefix}:{dimension}，TTL=限流窗口时长 */
+    public static final String RATE_LIMIT_PREFIX = "rate:limit:";
+
+    /** MQ 消息幂等去重 — Key: mq:dedup:{业务标识}，TTL 24 小时，用于消费者防重复投递 */
+    public static final String MQ_DEDUP_PREFIX = "mq:dedup:";
+
     // ────────────────── 帮助方法 ──────────────────
 
     public static String smsCodeKey(String phone) {
@@ -47,6 +53,13 @@ public final class RedisKeyConstant {
 
     public static String jwtBlacklistKey(String token) {
         return JWT_BLACKLIST_PREFIX + token;
+    }
+
+    /**
+     * MQ 通知消息幂等去重 Key — 按「关联业务 + 类型」唯一标识一条通知。
+     */
+    public static String mqNotificationDedupKey(String refType, Long refId, Integer type) {
+        return MQ_DEDUP_PREFIX + "notification:" + refType + ":" + refId + ":" + type;
     }
 
 }

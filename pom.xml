@@ -55,6 +55,9 @@
         <!-- x-file-storage 文件上传 -->
         <x-file-storage.version>2.3.0</x-file-storage.version>
         <aliyun-oss.version>3.16.1</aliyun-oss.version>
+
+        <!-- 消息队列 RocketMQ -->
+        <rocketmq-spring-boot.version>2.3.1</rocketmq-spring-boot.version>
     </properties>
 
     <!-- ========== 依赖声明（不下发到子模块）========== -->
@@ -164,6 +167,13 @@
                 <groupId>com.aliyun.oss</groupId>
                 <artifactId>aliyun-sdk-oss</artifactId>
                 <version>${aliyun-oss.version}</version>
+            </dependency>
+
+            <!-- RocketMQ Spring Boot Starter（消息队列） -->
+            <dependency>
+                <groupId>org.apache.rocketmq</groupId>
+                <artifactId>rocketmq-spring-boot-starter</artifactId>
+                <version>${rocketmq-spring-boot.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

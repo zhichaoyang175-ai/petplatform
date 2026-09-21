@@ -31,6 +31,7 @@ public class FollowUpServiceImpl implements FollowUpService {
     private final NotificationService notificationService;
 
     @Override
+    @Transactional
     public void generateFollowUpPlan(Long adoptionRecordId, int totalMonths) {
         AdoptionRecord record = adoptionRecordMapper.selectById(adoptionRecordId);
         if (record == null) return;
@@ -43,6 +44,14 @@ public class FollowUpServiceImpl implements FollowUpService {
             task.setStatus(0);
             taskMapper.insert(task);
         }
+    }
+
+    @Override
+    public boolean hasFollowUpPlan(Long adoptionRecordId) {
+        Long count = taskMapper.selectCount(
+                new LambdaQueryWrapper<FollowUpTask>()
+                        .eq(FollowUpTask::getAdoptionRecordId, adoptionRecordId));
+        return count != null && count > 0;
     }
 
     @Override
