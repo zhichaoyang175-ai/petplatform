@@ -88,5 +88,9 @@ PetPlatform_面试连环追问11问详解.md
 # ---- 反射 / 调试临时产物 ----
 tmp_reflect/
 
+# ---- 过程性技术文档（保留本地，不入仓库） ----
+PetPlatform_RocketMQ接入说明.md
+PetPlatform_代码审查与优化建议.md
+
 
 
